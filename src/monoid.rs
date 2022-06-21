@@ -39,6 +39,38 @@ impl<T> Semigroup for Last<T> {
     }
 }
 
+pub struct First<T>(pub Option<T>);
+
+impl<T> Default for First<T> {
+    fn default() -> Self {
+        Self(None)
+    }
+}
+
+impl<T> From<T> for First<T> {
+    fn from(value: T) -> Self {
+        Self(Some(value))
+    }
+}
+
+impl<T> From<Option<T>> for First<T> {
+    fn from(value: Option<T>) -> Self {
+        Self(value)
+    }
+}
+
+impl<T> From<First<T>> for Option<T> {
+    fn from(value: First<T>) -> Self {
+        value.0
+    }
+}
+
+impl<T> Semigroup for First<T> {
+    fn combine(self, rhs: Self) -> Self {
+        Self(self.0.or(rhs.0))
+    }
+}
+
 #[derive(Debug, Semigroup, Monoid, PartialEq, Eq, PartialOrd, Ord)]
 pub struct Sum<T>(pub T);
 
@@ -60,7 +92,7 @@ impl<T> From<T> for Sum<T> {
     }
 }
 
-#[derive(Debug, Semigroup)]
+#[derive(Debug, Clone, Copy, Semigroup, PartialEq, Eq, PartialOrd, Ord)]
 pub struct Product<T>(pub T);
 
 impl<T: Semigroup + num_traits::Num> Monoid for Product<T> {
@@ -81,6 +113,36 @@ where
 {
     fn empty() -> Self {
         Self::default()
+    }
+}
+
+#[derive(Debug, Clone, Copy)]
+pub struct Any(pub bool);
+
+impl Semigroup for Any {
+    fn combine(self, rhs: Self) -> Self {
+        Self(self.0 || rhs.0)
+    }
+}
+
+impl Default for Any {
+    fn default() -> Self {
+        Self(false)
+    }
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]
+pub struct All(pub bool);
+
+impl Semigroup for All {
+    fn combine(self, rhs: Self) -> Self {
+        Self(self.0 && rhs.0)
+    }
+}
+
+impl Default for All {
+    fn default() -> Self {
+        Self(true)
     }
 }
 
