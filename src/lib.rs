@@ -24,7 +24,7 @@ pub struct Select<T, M, A> {
     _phantom_data: PhantomData<T>,
 }
 
-impl<T, M: Monoid, A> Default for Select<T, M, A> {
+impl<M: Monoid, A> Default for Select<Build, M, A> {
     fn default() -> Self {
         Self {
             inner: Selection::Build(Monoid::empty()),
@@ -153,15 +153,6 @@ impl<M: Semigroup, A> Semigroup for Select<Build, M, A> {
                 }
                 _ => panic!("Select Build was in a wrong state to combine"),
             },
-            _phantom_data: PhantomData,
-        }
-    }
-}
-
-impl<M: Monoid, A> Monoid for Select<Build, M, A> {
-    fn empty() -> Self {
-        Self {
-            inner: Selection::Build(Monoid::empty()),
             _phantom_data: PhantomData,
         }
     }

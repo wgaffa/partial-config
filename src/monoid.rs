@@ -1,16 +1,9 @@
-use std::marker::PhantomData;
 use monoid_derive::*;
 
 use crate::semigroup::Semigroup;
 
 pub trait Monoid: Semigroup {
     fn empty() -> Self;
-}
-
-impl<T: Semigroup> Monoid for Option<T> {
-    fn empty() -> Self {
-        None
-    }
 }
 
 #[derive(Debug, Clone, Copy)]
@@ -43,12 +36,6 @@ impl<T> From<Last<T>> for Option<T> {
 impl<T> Semigroup for Last<T> {
     fn combine(self, rhs: Self) -> Self {
         Self(rhs.0.or(self.0))
-    }
-}
-
-impl<T> Monoid for Last<T> {
-    fn empty() -> Self {
-        Self(None)
     }
 }
 
@@ -88,23 +75,12 @@ impl<T> From<T> for Product<T> {
     }
 }
 
-macro_rules! impl_monoid_for_default {
-    ( $($x:ty),* ) => {
-        $(
-            impl Monoid for $x {
-                fn empty() -> Self {
-                    <$x as Default>::default()
-                }
-            }
-        )*
-    };
-}
-
-impl_monoid_for_default!(usize, isize, u8, i8, u16, i16, u32, i32, u64, i64, u128, i128, f32, f64);
-
-impl<T> Monoid for PhantomData<T> {
+impl<T> Monoid for T
+where
+    T: Semigroup + Default,
+{
     fn empty() -> Self {
-        Self
+        Self::default()
     }
 }
 
