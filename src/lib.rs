@@ -1,10 +1,6 @@
-pub mod monoid;
-pub mod semigroup;
 use std::marker::PhantomData;
 
-use crate::{monoid::Monoid, semigroup::Semigroup};
-
-use monoid_derive::Semigroup;
+use partial_functional::{Monoid, Semigroup};
 
 #[derive(Debug, Default, Clone, Copy)]
 pub struct Build;
@@ -204,9 +200,4 @@ impl Semigroup for Build {
     fn combine(self, _rhs: Self) -> Self {
         self
     }
-}
-
-#[derive(Debug, Semigroup)]
-pub struct Identity<T> {
-    pub value: T,
 }

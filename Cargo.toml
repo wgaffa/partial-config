@@ -6,8 +6,8 @@ edition = "2021"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-monoid_derive = { version = "0.1.0", path = "monoid_derive" }
-num-traits = "0.2.15"
+partfun_derive = "0.1.0"
+partial-functional = "0.1.0"
 
 [dev-dependencies]
 test-case = "2.1.0"
