@@ -2,16 +2,28 @@ use std::marker::PhantomData;
 
 use partial_functional::{Monoid, Semigroup};
 
+pub trait ConfigBuilder {
+    type Target;
+
+    fn build(self) -> Self::Target;
+}
+
 #[derive(Debug, Default, Clone, Copy)]
 pub struct Build;
 
-#[derive(Debug, Clone, Copy)]
+#[derive(Debug, Default, Clone, Copy)]
 pub struct Run;
 
 #[derive(Debug, Clone, Copy)]
 enum Selection<M, A> {
     Build(M),
     Run(A),
+}
+
+impl<M: Default, A> Default for Selection<M, A> {
+    fn default() -> Self {
+        Self::Build(M::default())
+    }
 }
 
 #[derive(Debug, Clone, Copy)]
@@ -30,8 +42,8 @@ impl<M: Monoid, A> Default for Select<Build, M, A> {
 }
 
 impl<M, A> Select<Build, M, A> {
-    pub fn get(self) -> M {
-        if let Selection::Build(x) = self.inner {
+    pub fn get(&self) -> &M {
+        if let Selection::Build(ref x) = self.inner {
             x
         } else {
             panic!("Select in wrong state")
@@ -66,19 +78,6 @@ where
             std::mem::take(x)
         } else {
             panic!("Select in wrong state")
-        }
-    }
-}
-
-impl<M, A> From<Option<A>> for Select<Build, M, A>
-where
-    M: Monoid,
-    Option<A>: Into<M>,
-{
-    fn from(value: Option<A>) -> Self {
-        Self {
-            inner: Selection::Build(value.into()),
-            _phantom_data: PhantomData,
         }
     }
 }
@@ -156,25 +155,43 @@ impl<M: Semigroup, A> Semigroup for Select<Build, M, A> {
 
 #[macro_export]
 macro_rules! config {
-    ($($der:meta),+ $name:ident { $(,)? }) => {
-        $(#[$der])*
-        pub struct $name<T> {
-            _phantom_data: PhantomData<T>,
-        }
-    };
-    ($($der:meta),+ $name:ident { $($i:ident : $m:ty => $t:ty),* $(,)? }) => {
-        $(#[$der])*
-        pub struct $name<T> {
+    (
+        $(#[$meta:meta])*
+        $vis:vis struct $name:ident
+        {
             $(
-                pub $i: Select<T, $m, $t>,
+                $(#[$field_meta:meta])*
+                $field_vis:vis $field_name:ident : { $m:ty , $a:ty }
+            ),* $(,)?
+        }
+    ) => {
+        $(#[$meta])*
+        $vis struct $name<T> {
+            $(
+                $(#[$field_meta])*
+                $field_vis $field_name: $crate::Select<T, $m, $a>,
             )*
         }
-    };
-    ($($tail:tt)*) => {
-        $crate::config!(
-            derive(Debug)
-            $($tail)*
-        );
+
+        impl Semigroup for $name<$crate::Build> {
+            fn combine(self, rhs: Self) -> Self {
+                Self {
+                    $(
+                        $field_name: self.$field_name.combine(rhs.$field_name),
+                    )*
+                }
+            }
+        }
+
+        impl Default for $name<$crate::Build> {
+            fn default() -> Self {
+                Self {
+                    $(
+                        $field_name: Default::default(),
+                    )*
+                }
+            }
+        }
     };
 }
 

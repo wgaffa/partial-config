@@ -7,7 +7,7 @@ edition = "2021"
 
 [dependencies]
 partfun_derive = "0.1.0"
-partial-functional = "0.1.0"
+partial-functional = { version = "0.1.0", path = "../partial-functional" }
 
 [dev-dependencies]
 test-case = "2.1.0"
