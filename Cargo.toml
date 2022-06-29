@@ -2,6 +2,9 @@
 name = "partial-config"
 version = "0.1.0"
 edition = "2021"
+description = "An implementation of Partial Config for rust"
+license = "MIT"
+repository = "https://github.com/wgaffa/partial-config"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
@@ -10,4 +13,5 @@ partfun_derive = "0.1.0"
 partial-functional = { version = "0.1.0", path = "../partial-functional" }
 
 [dev-dependencies]
+clap = "3.2.7"
 test-case = "2.1.0"
